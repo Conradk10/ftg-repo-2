@@ -52,7 +52,7 @@ class Text2stickMod(loader.Module):
             txt.append("\n".join(wrap(line, 30)))
         text = "\n".join(txt)
         font = io.BytesIO(bytes_font)
-        font = ImageFont.truetype(font, 100)
+        font = ImageFont.truetype(font, 109)
         image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
         w, h = draw.multiline_textsize(text=text, font=font)
