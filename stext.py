@@ -5,7 +5,7 @@ import requests
 from textwrap import wrap
 from PIL import Image, ImageDraw, ImageFont
 
-bytes_font = requests.get("https://github.com/Conradk10/ftg-repo-2/blob/main/bold.ttf?raw=true").content
+bytes_font = requests.get("https://github.com/Conradk10/ftg-repo-2/blob/main/Lobster-Regular.ttf?raw=true").content
 logger = logging.getLogger(__name__)
 
 
