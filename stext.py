@@ -5,7 +5,7 @@ import requests
 from textwrap import wrap
 from PIL import Image, ImageDraw, ImageFont
 
-bytes_font = requests.get("https://github.com/Conradk10/ftg-repo-2/blob/main/AppleColorEmoji.ttf?raw=true").content
+bytes_font = requests.get("http://192.168.1.10/AppleColorEmoji.ttf").content
 logger = logging.getLogger(__name__)
 
 
@@ -52,7 +52,7 @@ class Text2stickMod(loader.Module):
             txt.append("\n".join(wrap(line, 30)))
         text = "\n".join(txt)
         font = io.BytesIO(bytes_font)
-        font = ImageFont.truetype(font, 109)
+        font = ImageFont.truetype(font, size=109, layout_engine=ImageFont.LAYOUT_RAQM)
         image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
         w, h = draw.multiline_textsize(text=text, font=font)
