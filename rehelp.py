@@ -26,7 +26,7 @@ class HelpMod(loader.Module):
                "undoc_cmd": "🦊 Нет информации",
                "all_header": '🦊 <b>Список из {} доступных модулей:</b>',
                "mod_tmpl": '\n• <code>{}</code>',
-               "first_cmd_tmpl": "→ ( {}",
+               "first_cmd_tmpl": " → ( {}",
                "cmd_tmpl": " | {}",
                "args": "🦊 <b>Ошибка аргументов</b>",
                "set_cat": "🦊 <b>{} -> {}</b>"}
@@ -155,7 +155,7 @@ class HelpMod(loader.Module):
                         reply += "\n\n<b><u>🔹 " + cat + "</u></b>" + tmp
 
                 if len(mods_formatted) > 0:
-                    reply += "\n➖➖➖➖➖"
+                    reply += "\n➖ ➖ ➖ ➖ ➖"
 
                 for _, mod_formatted in mods_formatted.items():
                     reply += mod_formatted
