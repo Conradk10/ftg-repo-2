@@ -12,21 +12,20 @@ logger = logging.getLogger(__name__)
 class HelpMod(loader.Module):
     """Provides this help message"""
     strings = {"name": "Help-New",
-               "bad_module": '<b>Модуля</b> "<code>{}</code>" <b>нет в базе!</b>',
-               "single_mod_header": "<b>Информация о</b> <u>{}</u>:\n",
+               "bad_module": 'Модуль "<code>{}</code>" в БД не найден!',
+               "single_mod_header": "Информация о <code>{}</code>:\n",
                "single_cmd": "\n {}\n",
                "undoc_cmd": "Для этой команды нет документации",
-               "all_header": 'Список из <a href="https://t.me/GovnoCodules">{}</a> доступных модулей:\n\n',
-               "mod_tmpl": '\n‣<code>{}</code>',
-               "first_cmd_tmpl": "⋮( {}",
-               "cmd_tmpl": " | {}",
+               "all_header": 'Список из <code>{}</code> доступных модулей:\n\n',
+               "mod_tmpl": '\n・ <code>{}</code>',
+               "first_cmd_tmpl": "→ <code>{}</code>",
+               "cmd_tmpl": " <code>{}</code>",
                "KeyZenD": "KeyZenD"}
 
     @loader.unrestricted
     async def helpcmd(self, message):
         """.help [module]"""
         args = utils.get_args_raw(message)
-        id = message.from_id
         if args:
             module = None
             for mod in self.allmodules.modules:
