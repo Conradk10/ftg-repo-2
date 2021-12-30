@@ -12,14 +12,14 @@ logger = logging.getLogger(__name__)
 class HelpMod(loader.Module):
     """Provides this help message"""
     strings = {"name": "Help-New",
-               "bad_module": 'Модуль "<code>{}</code>" в БД не найден!',
-               "single_mod_header": "Информация о <code>{}</code>:\n",
+               "bad_module": 'Модуль "<b>{}</b>" в БД не найден!',
+               "single_mod_header": "Информация о <b>{}</b>:\n",
                "single_cmd": "\n {}\n",
                "undoc_cmd": "Для этой команды нет документации",
-               "all_header": 'Список из <code>{}</code> доступных модулей:\n\n',
-               "mod_tmpl": '\n・ <code>{}</code>',
-               "first_cmd_tmpl": "→ <code>{}</code>",
-               "cmd_tmpl": " <code>{}</code>",
+               "all_header": 'Список из <b>{}</b> доступных модулей:\n',
+               "mod_tmpl": '\n• <b>{}</b>',
+               "first_cmd_tmpl": " → <code>{}</code>",
+               "cmd_tmpl": ", <code>{}</code>",
                "KeyZenD": "KeyZenD"}
 
     @loader.unrestricted
@@ -78,7 +78,6 @@ class HelpMod(loader.Module):
                             first = False
                         else:
                             reply += self.strings("cmd_tmpl", message).format(cmd)
-                    reply += " )"
 
         await utils.answer(message, reply)
 
