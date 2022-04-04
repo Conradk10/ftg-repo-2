@@ -50,6 +50,14 @@ class SirenaInfoMod(loader.Module):
                 return await message.edit(f"<b>[Sirena Info]</b> Чат уже был удален!\n\n"
                                           f"Все чаты в базе данных:\n{chats_data}")
 
+        elif args == "map":
+            await message.edit(f"<b>[Sirena Info]</b> Загружаю карту воздушных тревог...")
+            stream = os.popen('node /home/pi/misc-files/make-screenshot.js')
+            output = stream.read()
+            print(output)
+            await message.client.send_file(chat_id, file='/home/pi/misc-files/webshot.png')
+            await message.delete()
+
         return await message.edit("<b>[Sirena Info]</b> Ни один аргумент не выбран!")
 
     async def watcher(self, message):
