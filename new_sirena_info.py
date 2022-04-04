@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import io
-import requests
-import datetime
+import os
 from .. import loader, utils
 
 
@@ -56,15 +54,11 @@ class SirenaInfoMod(loader.Module):
 
     async def watcher(self, message):
         if message.chat_id in [-1001659763460, -1001685499596]:
-            now = datetime.datetime.now().timestamp()
-            file = requests.get(f"https://api.apiflash.com/v1/urltoimage?"
-                                f"access_key=405a031aaf264fc29b744688dc3ac85e&"
-                                f"url=https%3A%2F%2Fwar.ukrzen.in.ua%2Falerts%2F%3F{now}&"
-                                f"format=jpeg&fresh=true&response_type=image")
-            file = io.BytesIO(file.content)
-            file.name = "webshot.png"
-            file.seek(0)
+            stream = os.popen('node /home/pi/misc-files/make-screenshot.js')
+            output = stream.read()
+            print(output)
+
             chats_data = self.db.get("SirenaInfo", "chats", [])
 
             for chat_id in chats_data:
-                await message.client.send_file(chat_id, file, caption=message.message)
+                await message.client.send_file(chat_id, file='/home/pi/misc-files/webshot.png', caption=message.message)
