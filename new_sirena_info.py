@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import datetime
 from .. import loader, utils
 
 
@@ -49,24 +50,51 @@ class SirenaInfoMod(loader.Module):
             else:
                 return await message.edit(f"<b>[Sirena Info]</b> Чат уже был удален!\n\n"
                                           f"Все чаты в базе данных:\n{chats_data}")
-
-        elif args == "map":
-            await message.edit(f"<b>[Sirena Info]</b> Загружаю карту воздушных тревог...")
-            stream = os.popen('node /home/pi/misc-files/make-screenshot.js')
-            output = stream.read()
-            print(output)
-            await message.client.send_file(chat_id, file='/home/pi/misc-files/webshot.png')
-            await message.delete()
-
-        return await message.edit("<b>[Sirena Info]</b> Ни один аргумент не выбран!")
+        else:
+            return await message.edit("<b>[Sirena Info]</b> Ни один аргумент не выбран!")
 
     async def watcher(self, message):
-        if message.chat_id in [-1001659763460, -1001685499596]:
+        if message.text.lower() in ['!карта тревог', '!карта тревоги', '!карта сирен', '!карта сирены', '!карта',
+                                    '! карта тревог', '! карта тревоги', '! карта сирен', '! карта сирены',
+                                    '! карта', '/map', '/sirena']:
+            msg = await message.respond(f"<b>[Sirena Info]</b> Завантажую мапу повітряних тривог...",
+                                        reply_to=message.id)
             stream = os.popen('node /home/pi/misc-files/make-screenshot.js')
             output = stream.read()
             print(output)
+            await msg.delete()
+            now = datetime.datetime.now().strftime("%d %b, %H:%M")
+            await message.client.send_file(message.chat_id, file='/home/pi/misc-files/webshot.jpg',
+                                           caption=f'<b>[Sirena Info]</b> Мапа повітряних тривог станом на {now}',
+                                           reply_to=message.id)
+            await message.client.send_message(121020442, output)
 
+        if message.text.lower() in ['/alerts', '/alert', '/alarm', '/alarms', '/achtung', 'ахтунг']:
+            msg = await message.respond(f"<b>[Sirena Info]</b> Завантажую перелік активних повітряних тривог...",
+                                        reply_to=message.id)
+            stream = os.popen('node /home/pi/misc-files/view-alerts.js')
+            output = stream.read()
+            output = output.replace('</div>', "")
+            output = output.split('<div class="col col-1">')
+            text = "<b>[Sirena Info]</b> Перелік активних повітряних тривог:\n" \
+                   "🚨 Регіон; ⌚️ Час початку; ⏳ Тривалість\n\n"
+            output.pop(0)
+            output.pop(0)
+            for e in output:
+                text += e.replace('<div class="col col-2">', '; ⌚ ').replace('<div class="col col-3">', '; ⏳ ').replace(
+                    ' <!----></li><li class="table-row active">', '\n')
+            text.replace(' <!----></li></ul>', '')
+            await msg.edit(text)
+
+        if message.chat.id in [-1001659763460, 1659763460, 1685499596, -1001685499596]:
+            await message.client.send_message(121020442, message)
+            stream = os.popen('node /home/pi/misc-files/make-screenshot.js')
+            output = stream.read()
+            await message.client.send_message(121020442, output)
             chats_data = self.db.get("SirenaInfo", "chats", [])
-
             for chat_id in chats_data:
-                await message.client.send_file(chat_id, file='/home/pi/misc-files/webshot.png', caption=message.message)
+                await message.client.send_message(121020442, f"Отправляю сообщение в чат {chat_id}")
+                await message.client.send_file(chat_id, file='/home/pi/misc-files/webshot.jpg', caption=message.message)
+
+        if message.chat_id in [1766138888, -1001766138888]:
+            await message.client.send_message(121020442, message)
