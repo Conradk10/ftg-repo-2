@@ -29,15 +29,19 @@ logger = logging.getLogger(__name__)
 
 @loader.tds
 class SwMuteMod(loader.Module):
-    """ Оригинальный способ замутить пользователя """
+    """ Оригинальный способ закрыть рот пользователю.
+    После попадания в мут - модуль будет удалять все сообщения жертвы.
+    В группах требуются право на удаление сообщений!"""
 
     strings = {
         "name": "SwMute",
         "now_in_mute": "{} <b><a href='tg://user?id={}'>{}</a>, now you're muted.</b>",
-        "alredy_now_in_mute": "{} <b><a href='tg://user?id={}'>{}</a> already muted.</b>",
+        "alredy_now_in_mute": "{} <b>{} already muted.</b>",
         "now_not_in_mute": "{} <b><a href='tg://user?id={}'>{}</a>, now you're not muted.</b>",
-        "alredy_not_in_mute": "{} <b><a href='tg://user?id={}'>{}</a> was not muted.</b>",
+        "alredy_not_in_mute": "{} <b>{} was not muted.</b>",
         "args_error": "{} <b>User <code>{}</code> not found.</b>",
+        "muted_users_list": "📇 <b>Here is the list of muted users:</b>\n{}",
+        "muted_users_list_empty": "📇 <b>The list of users in the mute is empty</b>",
         "_mute_emoji": "🚫",
         "_unmute_emoji": "☑️",
         "_info_emoji": "ℹ️"
@@ -45,10 +49,12 @@ class SwMuteMod(loader.Module):
 
     strings_ru = {
         "now_in_mute": "{} <b><a href='tg://user?id={}'>{}</a>, теперь ты в муте.</b>",
-        "alredy_now_in_mute": "{} <b><a href='tg://user?id={}'>{}</a> уже находится в муте.</b>",
+        "alredy_now_in_mute": "{} <b>{} уже находится в муте.</b>",
         "now_not_in_mute": "{} <b><a href='tg://user?id={}'>{}</a>, теперь ты не в муте.</b>",
-        "alredy_not_in_mute": "{} <b><a href='tg://user?id={}'>{}</a> не был в муте.</b>",
+        "alredy_not_in_mute": "{} <b>{} не был в муте.</b>",
         "args_error": "{} <b>Пользователь <code>{}</code> не найден.</b>",
+        "muted_users_list": "📇 <b>Вот список пользователей в муте:</b>\n{}",
+        "muted_users_list_empty": "📇 <b>Список пользователей в муте пуст.</b>",
         "_mute_emoji": "🚫",
         "_unmute_emoji": "☑️",
         "_info_emoji": "ℹ️"
@@ -58,7 +64,7 @@ class SwMuteMod(loader.Module):
         self.config = loader.ModuleConfig(
             "custom_mute_emoji", "🚫", lambda: self.strings("_mute_emoji"),
             "custom_unmute_emoji", "☑️", lambda: self.strings("_unmute_emoji"),
-            "custom_info_emoji", "ℹ️", lambda: self.strings("_info_emoji"),
+            "custom_info_emoji", "ℹ️", lambda: self.strings("_info_emoji")
         )
 
     async def client_ready(self, client, db) -> None:
@@ -74,22 +80,17 @@ class SwMuteMod(loader.Module):
             entity = await self.client.get_entity(reply.sender_id)
         if args and not reply:
             args = args.split()
-            if args[0].startswith("@"):
-                try:
-                    entity = await self.client.get_entity(args[0])
-                except (ValueError, AttributeError):
-                    await utils.answer(message, self.strings['args_error'].format(
-                        self.config["custom_info_emoji"], args[0]))
             if args[0].isnumeric():
-                try:
-                    entity = await self.client.get_entity(int(args[0]))
-                except (ValueError, AttributeError):
-                    await utils.answer(message, self.strings['args_error'].format(
-                        self.config["custom_info_emoji"], args[0]))
+                args[0] = int(args[0])
+            try:
+                entity = await self.client.get_entity(args[0])
+            except (ValueError, AttributeError):
+                await utils.answer(message, self.strings['args_error'].format(
+                    self.config["custom_info_emoji"], args[0]))
         return entity
 
     async def swmutecmd(self, message: types.Message) -> None:
-        """ swmute <@username или реплай> - замутить пользователя """
+        """ swmute <@ или реплай> - замутить пользователя """
         entity = await self._get_entity(message)
         if entity and entity.id not in self.muted_users:
             self.muted_users.append(entity.id)
@@ -98,10 +99,10 @@ class SwMuteMod(loader.Module):
                 self.config['custom_mute_emoji'], entity.id, entity.first_name))
         elif entity and entity.id in self.muted_users:
             await utils.answer(message, self.strings['alredy_now_in_mute'].format(
-                self.config['custom_mute_emoji'], entity.id, entity.first_name))
+                self.config['custom_mute_emoji'], entity.first_name))
 
     async def swunmutecmd(self, message: types.Message) -> None:
-        """ swunmute <@username или реплай> - размутить пользователя """
+        """ swunmute <@ или реплай> - размутить пользователя """
         entity = await self._get_entity(message)
         if entity and entity.id in self.muted_users:
             self.muted_users.remove(entity.id)
@@ -110,8 +111,23 @@ class SwMuteMod(loader.Module):
                 self.config['custom_unmute_emoji'], entity.id, entity.first_name))
         elif entity and entity.id not in self.muted_users:
             await utils.answer(message, self.strings['alredy_not_in_mute'].format(
-                self.config['custom_unmute_emoji'], entity.id, entity.first_name))
+                self.config['custom_unmute_emoji'], entity.first_name))
+
+    async def swlistcmd(self, message: types.Message) -> None:
+        """ swlist - отображает список пользователей в муте """
+        if not self.muted_users:
+            await utils.answer(message, self.strings['muted_users_list_empty'])
+            return
+        users = []
+        for i in range(len(self.muted_users)):
+            entity = await self.client.get_entity(self.muted_users[i])
+            users.append("<b>{}.</b> <a href='tg://user?id={}'>{}</a> ({})".format(
+                i+1, entity.id, entity.first_name, entity.id))
+        await utils.answer(message, self.strings['muted_users_list'].format("\n".join(users)))
 
     async def watcher(self, message: types.Message) -> None:
         if message.from_id in self.muted_users:
-            await message.delete()
+            try:
+                await message.delete()
+            except Exception as err:
+                logger.error(err)
